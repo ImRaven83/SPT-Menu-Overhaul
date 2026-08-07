@@ -6,7 +6,7 @@ namespace MoxoPixel.MenuOverhaul.Utils
         {
             public const string Guid = "com.moxopixel.menuoverhaul";
             public const string Name = "MoxoPixel-MenuOverhaul";
-            public const string Version = "1.2.2";
+            public const string Version = "1.2.3";
         }
 
         internal static class Reflection

@@ -43,7 +43,7 @@ Install the mod by dragging the first folder in the zip into your SPT install di
 
 *   **BepInEx:** This plugin requires a BepInEx pack appropriate for the target game.
 *   **BepInEx.ConfigurationManager:** (Recommended) For in-game configuration of the plugin settings.
-*   **Target Game:** This plugin is designed for SPT (Single Player Tarkov).
+*   **Target Game:** This plugin is designed for SPT (Single Player Tarkov). Tested against SPT 4.1.2.
 
 ## Configuration
 

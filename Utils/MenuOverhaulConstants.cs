@@ -12,8 +12,8 @@ namespace MoxoPixel.MenuOverhaul.Utils
         internal static class Reflection
         {
             public const string MenuScreenShowMethod = "Show";
-            public const string DefaultButtonIdleMethod = "method_1";
-            public const string DefaultButtonHighlightedMethod = "method_2";
+            public const string DefaultButtonIdleMethod = "SetNormalState";
+            public const string DefaultButtonHighlightedMethod = "SetHighlightedState";
 
             public const string NormalIconColorField = "_normalIconColor";
             public const string NormalLabelColorField = "_normalLabelColor";

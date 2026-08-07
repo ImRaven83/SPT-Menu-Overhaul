@@ -172,7 +172,7 @@ namespace MoxoPixel.MenuOverhaul.Infrastructure.Reflection
 
         private static FieldInfo ResolveField(Type type, string fieldName, string memberKey)
         {
-            FieldInfo field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             TrackResolution(field, memberKey);
             return field;
         }

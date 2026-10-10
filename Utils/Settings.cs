@@ -1,4 +1,4 @@
-﻿using BepInEx.Configuration;
+using BepInEx.Configuration;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -56,6 +56,8 @@ namespace MoxoPixel.MenuOverhaul.Utils
 
         public static void Init(ConfigFile config)
         {
+            ColorTomlConverter.Register();
+
             ConfigEntries.Add(EnableBackground = config.Bind(
                 GeneralSectionTitle,
                 "Enable Background",

@@ -112,7 +112,6 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
                 return;
             }
 
-            MainMenuLayoutRuntime.HideGameObject(menuScreen, MenuOverhaulConstants.MenuScreen.AlphaWarningField);
             MainMenuLayoutRuntime.HideGameObject(menuScreen, MenuOverhaulConstants.MenuScreen.WarningField);
         }
 

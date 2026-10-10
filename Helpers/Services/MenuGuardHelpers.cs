@@ -1,4 +1,6 @@
 using EFT;
+using EFT.Expansions;
+using EFT.SeasonalRewards;
 using EFT.UI;
 using EFT.UI.Matchmaker;
 using MoxoPixel.MenuOverhaul.Infrastructure.Diagnostics;
@@ -13,7 +15,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
         {
             return typeof(MenuScreen).GetMethod(
                 MenuOverhaulConstants.Reflection.MenuScreenShowMethod,
-                [typeof(Profile), typeof(MatchmakerPlayersController), typeof(ESessionMode)]);
+                [typeof(MatchmakerPlayersController), typeof(ExpansionsPlayerInfo), typeof(GameModeDescriptor), typeof(Profile), typeof(SeasonalRewardController)]);
         }
 
         public static bool IsMainMenuShowContext(MenuScreen menuScreen, Profile profile, MatchmakerPlayersController matchmaker, string scope)

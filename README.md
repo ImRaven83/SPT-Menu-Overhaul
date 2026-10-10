@@ -41,9 +41,9 @@ Install the mod by dragging the first folder in the zip into your SPT install di
 
 ## Prerequisites
 
-*   **BepInEx:** This plugin requires a BepInEx pack appropriate for the target game.
-*   **BepInEx.ConfigurationManager:** (Recommended) For in-game configuration of the plugin settings.
-*   **Target Game:** This plugin is designed for SPT (Single Player Tarkov). Tested against SPT 4.1.2.
+*   **BepInEx:** SPT 5.0 runs EFT under IL2CPP, so this plugin requires the BepInEx 6 IL2CPP (`BepInEx.Unity.IL2CPP`) pack shipped with SPT 5.0.
+*   **BepInEx.ConfigurationManager:** (Recommended) An IL2CPP-compatible ConfigurationManager for in-game configuration of the plugin settings.
+*   **Target Game:** This plugin is designed for SPT (Single Player Tarkov) 5.0. Version 1.2.3 is the last release for SPT 4.1.x.
 
 ## Configuration
 
@@ -94,12 +94,12 @@ Icon file names should match the internal icon keys used by the mod:
 ### Building
 
 *   This project is written in C#.
-*   It targets .NET Standard 2.1.
-*   Dependencies include (all resolved from your local SPT install directory):
-    *   **From `EscapeFromTarkov_Data/Managed/`:** `Assembly-CSharp.dll`, `UnityEngine.dll`, `UnityEngine.CoreModule.dll`, `UnityEngine.UI.dll`, `UnityEngine.UIModule.dll`, `UnityEngine.ImageConversionModule.dll`, `UnityEngine.AssetBundleModule.dll`, `UnityEngine.AudioModule.dll`, `UnityEngine.PhysicsModule.dll`, `UnityEngine.InputLegacyModule.dll`, `UnityEngine.IMGUIModule.dll`, `UnityEngine.TextRenderingModule.dll`, `Unity.TextMeshPro.dll`, `Unity.Postprocessing.Runtime.dll`, `DOTween.dll`, `DOTween.Modules.dll`, `Comfort.dll`, `Comfort.Unity.dll`, `Newtonsoft.Json.dll`, `Sirenix.Serialization.dll`, `uLipSync.Runtime.dll`
-    *   **From `BepInEx/core/`:** `BepInEx.dll`, `0Harmony.dll`
-    *   **From `BepInEx/plugins/spt/`:** `spt-common.dll`, `spt-reflection.dll`
-
+*   It targets .NET 10 (`net10.0`), the runtime BepInEx 6 IL2CPP uses in SPT 5.0.
+*   References are resolved from your local SPT install. By default the project expects to be cloned two folders below the SPT root; otherwise pass the path explicitly: `dotnet build -c Release -p:SptPath="C:\SPT"`.
+*   Dependencies:
+    *   **From `BepInEx/interop/`** (Il2CppInterop proxy assemblies generated on the first game launch with BepInEx): all `*.dll` files, including `Assembly-CSharp.dll`, `Il2Cppmscorlib.dll`, `UnityEngine.*.dll`, `Unity.TextMeshPro.dll`, `DOTween.dll`, `DOTween.Modules.dll`
+    *   **From `BepInEx/core/`:** `BepInEx.Core.dll`, `BepInEx.Unity.IL2CPP.dll`, `BepInEx.Unity.Common.dll`, `0Harmony.dll`, `Il2CppInterop.Runtime.dll`, `Il2CppInterop.Common.dll`
+    *   **From `BepInEx/plugins/spt/`** (override with `-p:SptPluginsPath=...`): `SPTushonka.Common.dll`, `SPTushonka.Reflection.dll`
 
 ## Contributing
 

@@ -3,7 +3,7 @@ using EFT.UI;
 using EFT.UI.Matchmaker;
 using MoxoPixel.MenuOverhaul.Helpers.Services;
 using MoxoPixel.MenuOverhaul.Infrastructure.Diagnostics;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System;
 using System.Reflection;
 
@@ -26,7 +26,7 @@ namespace MoxoPixel.MenuOverhaul.Patches
                     return;
                 }
 
-                await MainMenuLayoutService.ApplyMainMenuLayoutAsync(__instance).ConfigureAwait(false);
+                await MainMenuLayoutService.ApplyMainMenuLayoutAsync(__instance);
                 MainMenuButtonsService.ApplyMainMenuButtons(__instance);
             }
             catch (Exception e)

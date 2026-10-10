@@ -1,5 +1,6 @@
 using BepInEx.Logging;
 using BepInEx;
+using BepInEx.Unity.IL2CPP;
 using MoxoPixel.MenuOverhaul.Patches;
 using MoxoPixel.MenuOverhaul.Utils;
 using MoxoPixel.MenuOverhaul.Helpers;
@@ -8,21 +9,36 @@ using MoxoPixel.MenuOverhaul.Infrastructure.Lifecycle;
 using MoxoPixel.MenuOverhaul.Infrastructure.Diagnostics;
 using System.Collections.Generic;
 using System;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Il2Cpp;
+using SPTushonka.Reflection.Patching;
 
 namespace MoxoPixel.MenuOverhaul
 {
     [BepInPlugin(MenuOverhaulConstants.Plugin.Guid, MenuOverhaulConstants.Plugin.Name, MenuOverhaulConstants.Plugin.Version)]
-    public class Plugin : BaseUnityPlugin
+    public class Plugin : BasePlugin
     {
         public static ManualLogSource LogSource { get; private set; }
 
         private readonly List<ModulePatch> _patches = new List<ModulePatch>();
 
-        private void Awake()
+        public override void Load()
         {
-            LogSource = Logger;
+            LogSource = Log;
             Settings.Init(Config);
+
+            // Async continuations (await) must resume on the Unity main thread under IL2CPP.
+            // Install is a no-op when SPT has already installed the dispatcher.
+            try
+            {
+                MainThread.Install(this);
+            }
+            catch (Exception ex)
+            {
+                LogSource.LogWarning($"Could not install main-thread dispatcher: {ex.Message}");
+            }
+
+            // Managed MonoBehaviours (e.g. PlayerModelDragRotator) must be registered with IL2CPP before AddComponent.
+            Il2CppInjection.RegisterAll(typeof(Plugin).Assembly, LogSource);
 
             EftReflectionMap.Initialize();
             MenuDiagnosticsLogger.Info(LogSubsystem.Reflection, EftReflectionMap.GetStartupSummary());
@@ -43,7 +59,7 @@ namespace MoxoPixel.MenuOverhaul
 
             InitializeAndEnablePatches();
 
-            LogSource.LogInfo($"Plugin {Info.Metadata.Name} version {Info.Metadata.Version} loaded.");
+            LogSource.LogInfo($"Plugin {MenuOverhaulConstants.Plugin.Name} version {MenuOverhaulConstants.Plugin.Version} loaded.");
         }
 
         private void InitializeAndEnablePatches()
@@ -68,9 +84,10 @@ namespace MoxoPixel.MenuOverhaul
             }
         }
         
-        private void OnDestroy()
+        public override bool Unload()
         {
             CleanupResources();
+            return true;
         }
         
         private void CleanupResources()

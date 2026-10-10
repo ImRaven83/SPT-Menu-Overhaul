@@ -1,6 +1,7 @@
 using DG.Tweening;
 using EFT.UI;
 using MoxoPixel.MenuOverhaul.Utils;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -89,18 +90,18 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
             if (instance.Label == null) return;
 
             Transform labelTransform = instance.Label.transform;
-            RectTransform labelRect = labelTransform as RectTransform;
+            RectTransform labelRect = labelTransform?.TryCast<RectTransform>();
             Vector2 targetPosition = baseState.LabelAnchoredPosition + new Vector2(slideOffset, 0f);
 
             if (animated)
             {
-                DOTween.To(() => instance.Label.color, color => instance.Label.color = color, labelColor, duration)
+                instance.Label.DOColor(labelColor, duration)
                     .SetTarget(labelTransform)
                     .SetEase(Ease.OutQuad);
 
                 if (baseState.HasLabelRect && labelRect != null)
                 {
-                    DOTween.To(() => labelRect.anchoredPosition, position => labelRect.anchoredPosition = position, targetPosition, duration)
+                    labelRect.DOAnchorPos(targetPosition, duration, false)
                         .SetTarget(labelTransform)
                         .SetEase(ease);
                 }
@@ -121,13 +122,13 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
             if (!baseState.HasIconRect) return;
             if (instance.Icon.transform.IsChildOf(instance.Label.transform)) return;
 
-            RectTransform iconRect = instance.Icon.transform as RectTransform;
+            RectTransform iconRect = instance.Icon.transform?.TryCast<RectTransform>();
             if (iconRect == null) return;
 
             Vector2 targetPosition = baseState.IconAnchoredPosition + new Vector2(slideOffset, 0f);
             if (animated)
             {
-                DOTween.To(() => iconRect.anchoredPosition, position => iconRect.anchoredPosition = position, targetPosition, duration)
+                iconRect.DOAnchorPos(targetPosition, duration, false)
                     .SetTarget(instance.Icon.transform)
                     .SetEase(ease);
             }
@@ -144,7 +145,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
                 return;
             }
 
-            RectTransform indicatorRect = indicatorImage.transform as RectTransform;
+            RectTransform indicatorRect = indicatorImage.transform?.TryCast<RectTransform>();
             if (indicatorRect != null)
             {
                 indicatorFactory.ConfigureRect(instance, baseState, indicatorRect, indicatorSizeMultiplier, indicatorSpacing);
@@ -176,7 +177,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
                         indicatorRect.anchoredPosition = targetPosition + new Vector2(-HoverIndicatorSlideDistance, 0f);
                         indicatorRect.localScale = Vector3.one * HoverIndicatorStartScale;
 
-                        DOTween.To(() => indicatorRect.anchoredPosition, position => indicatorRect.anchoredPosition = position, targetPosition, duration * 0.75f)
+                        indicatorRect.DOAnchorPos(targetPosition, duration * 0.75f, false)
                             .SetEase(Ease.OutCubic);
                         indicatorRect.DOScale(1f, duration * 0.75f).SetEase(Ease.OutQuad);
                     }
@@ -200,20 +201,20 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
                     if (indicatorRect != null)
                     {
                         Vector2 hideTarget = indicatorRect.anchoredPosition + new Vector2(-HoverIndicatorSlideDistance * 0.6f, 0f);
-                        DOTween.To(() => indicatorRect.anchoredPosition, position => indicatorRect.anchoredPosition = position, hideTarget, duration * 0.6f)
+                        indicatorRect.DOAnchorPos(hideTarget, duration * 0.6f, false)
                             .SetEase(Ease.OutQuad);
                         indicatorRect.DOScale(HoverIndicatorStartScale, duration * 0.6f).SetEase(Ease.OutQuad);
                     }
 
                     indicatorImage.DOFade(0f, duration * 0.6f)
                         .SetEase(Ease.OutQuad)
-                        .OnComplete(() =>
+                        .OnComplete(new Action(() =>
                         {
                             if (indicatorImage != null)
                             {
                                 indicatorImage.gameObject.SetActive(false);
                             }
-                        });
+                        }));
                 }
                 else
                 {

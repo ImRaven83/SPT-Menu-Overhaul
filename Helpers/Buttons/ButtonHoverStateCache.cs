@@ -30,7 +30,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
 
             ButtonHoverBaseState state = default;
 
-            if (instance.Label != null && instance.Label.transform is RectTransform labelRect)
+            if (instance.Label != null && instance.Label.transform?.TryCast<RectTransform>() is { } labelRect)
             {
                 state.HasLabelRect = true;
                 state.LabelAnchoredPosition = labelRect.anchoredPosition;
@@ -39,7 +39,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
             if (instance.Icon != null)
             {
                 state.IconScale = instance.Icon.transform.localScale;
-                if (instance.Icon.transform is RectTransform iconRect)
+                if (instance.Icon.transform?.TryCast<RectTransform>() is { } iconRect)
                 {
                     state.HasIconRect = true;
                     state.IconAnchoredPosition = iconRect.anchoredPosition;

@@ -14,7 +14,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
         private const float MaxIndicatorSize = 20f;
         private const string HoverIndicatorObjectName = "MenuHoverIndicator";
 
-        private static readonly string PluginResourcesRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BepInEx", "plugins", "MoxoPixel.MenuOverhaul", "Resources");
+        private static readonly string PluginResourcesRoot = Path.Combine(Path.GetDirectoryName(typeof(ButtonHoverIndicatorFactory).Assembly.Location) ?? string.Empty, "Resources");
         private static readonly string HoverIndicatorDirectoryPrimary = Path.Combine(PluginResourcesRoot, "icon");
         private static readonly string HoverIndicatorDirectoryFallback = Path.Combine(PluginResourcesRoot, "icons");
 
@@ -26,7 +26,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
                 return true;
             }
 
-            if (instance.Label == null || !(instance.Label.transform is RectTransform labelRect))
+            if (instance.Label == null || !(instance.Label.transform?.TryCast<RectTransform>() is { } labelRect))
             {
                 return false;
             }
@@ -54,10 +54,11 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
                 return false;
             }
 
-            GameObject indicatorObject = new GameObject(HoverIndicatorObjectName, typeof(RectTransform), typeof(Image));
+            GameObject indicatorObject = new GameObject(HoverIndicatorObjectName);
+            RectTransform indicatorRect = indicatorObject.AddComponent<RectTransform>();
+            indicatorObject.AddComponent<Image>();
             indicatorObject.transform.SetParent(indicatorHostRect, false);
 
-            RectTransform indicatorRect = indicatorObject.GetComponent<RectTransform>();
             indicatorRect.anchorMin = new Vector2(0.5f, 0.5f);
             indicatorRect.anchorMax = new Vector2(0.5f, 0.5f);
             indicatorRect.pivot = new Vector2(0.5f, 0.5f);
@@ -83,8 +84,8 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
                 return;
             }
 
-            RectTransform iconRect = instance.Icon.transform as RectTransform;
-            RectTransform parentRect = indicatorRect.parent as RectTransform;
+            RectTransform iconRect = instance.Icon.transform?.TryCast<RectTransform>();
+            RectTransform parentRect = indicatorRect.parent?.TryCast<RectTransform>();
             if (iconRect == null || parentRect == null)
             {
                 return;
@@ -108,7 +109,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Buttons
 
         private static RectTransform GetIndicatorHostRect(DefaultUIButtonAnimation instance, RectTransform fallbackRect)
         {
-            if (instance?.Icon != null && instance.Icon.transform.parent is RectTransform iconParentRect)
+            if (instance?.Icon != null && instance.Icon.transform.parent?.TryCast<RectTransform>() is { } iconParentRect)
             {
                 return iconParentRect;
             }

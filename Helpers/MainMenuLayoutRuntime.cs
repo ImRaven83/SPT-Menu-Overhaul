@@ -13,7 +13,8 @@ namespace MoxoPixel.MenuOverhaul.Helpers
     public static class MainMenuLayoutRuntime
     {
         private static bool isAlignmentCameraMoved;
-        private static readonly string PluginResourcesRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BepInEx", "plugins", "MoxoPixel.MenuOverhaul", "Resources");
+        // Resources ship next to the plugin DLL. Under BepInEx 6 (IL2CPP) the .NET host's base directory is not the game folder.
+        private static readonly string PluginResourcesRoot = Path.Combine(Path.GetDirectoryName(typeof(MainMenuLayoutRuntime).Assembly.Location) ?? string.Empty, "Resources");
         private static readonly string IconsDirectory = Path.Combine(PluginResourcesRoot, "icons");
         private static readonly string BackgroundDirectory = Path.Combine(PluginResourcesRoot, "background");
         private static readonly Dictionary<string, string> ButtonNameToFileNameMap = new Dictionary<string, string>
@@ -395,19 +396,20 @@ namespace MoxoPixel.MenuOverhaul.Helpers
             return materials;
         }
 
+        // Pixels are flipped in a managed array and written back with one SetPixels32 call:
+        // per-pixel GetPixel/SetPixel crosses the IL2CPP interop boundary millions of times on a full-size background.
         public static Texture2D FlipTextureVertically(Texture2D original)
         {
             if (original == null) return null;
-            Texture2D flipped = new Texture2D(original.width, original.height);
-            for (int y = 0; y < original.height; y++)
+            int width = original.width;
+            int height = original.height;
+            Color32[] source = original.GetPixels32();
+            Color32[] result = new Color32[source.Length];
+            for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < original.width; x++)
-                {
-                    flipped.SetPixel(x, original.height - y - 1, original.GetPixel(x, y));
-                }
+                Array.Copy(source, y * width, result, (height - y - 1) * width, width);
             }
-            flipped.Apply();
-            return flipped;
+            return CreateTexture(width, height, result);
         }
 
         public static Texture2D FlipTextureHorizontally(Texture2D original)
@@ -415,16 +417,27 @@ namespace MoxoPixel.MenuOverhaul.Helpers
             if (original == null) return null;
             int width = original.width;
             int height = original.height;
-            Texture2D flipped = new Texture2D(width, height);
+            Color32[] source = original.GetPixels32();
+            Color32[] result = new Color32[source.Length];
             for (int y = 0; y < height; y++)
             {
+                int row = y * width;
                 for (int x = 0; x < width; x++)
                 {
-                    flipped.SetPixel(width - x - 1, y, original.GetPixel(x, y));
+                    result[row + width - x - 1] = source[row + x];
                 }
             }
-            flipped.Apply();
-            return flipped;
+            return CreateTexture(width, height, result);
+        }
+
+        private static Texture2D CreateTexture(int width, int height, Color32[] pixels)
+        {
+            Texture2D texture = new Texture2D(width, height);
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            // Unity cannot see managed references under IL2CPP, so keep cached textures from being unloaded as unused.
+            texture.hideFlags |= HideFlags.DontUnloadUnusedAsset;
+            return texture;
         }
 
         private static void ConfigureLampContainer(Transform lampContainerTransform)

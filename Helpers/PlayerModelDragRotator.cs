@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -7,15 +8,20 @@ namespace MoxoPixel.MenuOverhaul.Helpers
     // Mirrors EFT.Utilities.XCoordRotation behavior (yaw -= delta * speed, wrapped to 0..360),
     // but polls Input directly so we don't have to attach a UI raycast region that would
     // intercept clicks on the main-menu buttons.
+    // Registered with IL2CPP in Plugin.Load (Il2CppInjection.RegisterAll) so it can be added as a component.
     internal class PlayerModelDragRotator : MonoBehaviour
     {
+        public PlayerModelDragRotator(IntPtr pointer) : base(pointer)
+        {
+        }
+
         public Transform Target;
         public float RotationSpeed = 0.3f;
         public float CurrentYaw;
 
         private bool _dragging;
 
-        private void Update()
+        public void Update()
         {
             if (Target == null) return;
 

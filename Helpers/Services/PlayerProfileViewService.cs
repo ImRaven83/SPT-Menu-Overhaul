@@ -3,7 +3,8 @@ using EFT.UI;
 using MoxoPixel.MenuOverhaul.Infrastructure.Diagnostics;
 using MoxoPixel.MenuOverhaul.Infrastructure.Lifecycle;
 using MoxoPixel.MenuOverhaul.Utils;
-using SPT.Reflection.Utils;
+using SPTushonka.Reflection.Il2Cpp;
+using SPTushonka.Reflection.Utils;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
 
         public static async Task ApplyMainMenuProfileViewAsync()
         {
-            await AddPlayerModel().ConfigureAwait(false);
+            await AddPlayerModel();
             MenuLifecycleCoordinator.EnsureProfileSubscriptions();
             ApplyProfileViewState();
         }
@@ -250,7 +251,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
 
             if (PatchConstants.BackEndSession?.Profile != null)
             {
-                await playerModelViewScript.Show(PatchConstants.BackEndSession.Profile, null, null, 0f, null, Settings.EnableDefaultPlayerAnimation.Value);
+                await playerModelViewScript.Show(PatchConstants.BackEndSession.Profile, null, null, 0f, null, Settings.EnableDefaultPlayerAnimation.Value).AsManaged();
                 AdjustInnerPlayerModelPosition(ClonedPlayerModelView);
                 ConfigurePreviewRenderQuality(ClonedPlayerModelView);
             }
@@ -741,7 +742,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
                 playerModelViewScript.Close();
                 if (PatchConstants.BackEndSession?.Profile != null)
                 {
-                    await playerModelViewScript.Show(PatchConstants.BackEndSession.Profile, null, null, 0f, null, Settings.EnableDefaultPlayerAnimation.Value);
+                    await playerModelViewScript.Show(PatchConstants.BackEndSession.Profile, null, null, 0f, null, Settings.EnableDefaultPlayerAnimation.Value).AsManaged();
                     AdjustInnerPlayerModelPosition(ClonedPlayerModelView);
                     UpdateCameraPosition();
                     UpdateCameraRotation();

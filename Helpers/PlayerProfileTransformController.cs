@@ -160,6 +160,34 @@ namespace MoxoPixel.MenuOverhaul.Helpers
 
             MainMenuLayoutRuntime.SetChildActive(modelInstance, "IconsContainer", false);
             MainMenuLayoutRuntime.SetChildActive(modelInstance, "DragTrigger", false);
+
+            // EFT 1.x adds more inventory-only UI to PlayerModelView (faction badge, headwear customization slot)
+            // under names that differ between versions. Keep only what the main-menu preview uses and hide the rest.
+            MainMenuLayoutRuntime.DumpHierarchyOnce("PlayerModelView", modelInstance.transform);
+            Transform root = modelInstance.transform;
+            for (int i = 0; i < root.childCount; i++)
+            {
+                Transform child = root.GetChild(i);
+                if (!child.gameObject.activeSelf || IsPreviewElement(child))
+                {
+                    continue;
+                }
+
+                child.gameObject.SetActive(false);
+                MenuDiagnosticsLogger.Debug(LogSubsystem.Profile, $"HidePlayerModelExtraElements - hid '{child.name}'.");
+            }
+        }
+
+        private static bool IsPreviewElement(Transform child)
+        {
+            string name = child.name;
+            if (name == MenuOverhaulConstants.PlayerModel.RootPath || name == MenuOverhaulConstants.PlayerModel.BottomFieldName)
+            {
+                return true;
+            }
+
+            // The rendered preview image (CameraImage) and anything rendering the model must stay visible.
+            return child.GetComponentInChildren<EFT.UI.CameraImage>(true) != null;
         }
 
         public static void AdjustInnerPlayerModelPosition(GameObject modelInstance)

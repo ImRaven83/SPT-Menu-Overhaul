@@ -112,7 +112,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers
         private static readonly HashSet<string> DumpedHierarchies = new HashSet<string>();
 
         // Writes the object tree once so changed EFT scene layouts can be diagnosed from LogOutput.log.
-        private static void DumpHierarchyOnce(string key, Transform root)
+        internal static void DumpHierarchyOnce(string key, Transform root)
         {
             if (root == null || !DumpedHierarchies.Add(key)) return;
 

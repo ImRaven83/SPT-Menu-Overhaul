@@ -253,6 +253,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             {
                 await playerModelViewScript.Show(PatchConstants.BackEndSession.Profile, null, null, 0f, null, Settings.EnableDefaultPlayerAnimation.Value).AsManaged();
                 AdjustInnerPlayerModelPosition(ClonedPlayerModelView);
+                HidePlayerModelExtraElements(ClonedPlayerModelView);
                 ConfigurePreviewRenderQuality(ClonedPlayerModelView);
             }
             else
@@ -744,6 +745,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
                 {
                     await playerModelViewScript.Show(PatchConstants.BackEndSession.Profile, null, null, 0f, null, Settings.EnableDefaultPlayerAnimation.Value).AsManaged();
                     AdjustInnerPlayerModelPosition(ClonedPlayerModelView);
+                    HidePlayerModelExtraElements(ClonedPlayerModelView);
                     UpdateCameraPosition();
                     UpdateCameraRotation();
                     ConfigurePreviewRenderQuality(ClonedPlayerModelView);

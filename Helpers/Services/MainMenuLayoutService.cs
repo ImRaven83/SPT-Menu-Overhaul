@@ -32,6 +32,8 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
         public static void SubscribeToLayoutSettingsChanges()
         {
             Settings.EnableTopGlow.SettingChanged += OnLayoutSettingsChanged;
+            Settings.SeasonWidgetMode.SettingChanged += OnSeasonWidgetSettingsChanged;
+            Settings.SeasonWidgetScale.SettingChanged += OnSeasonWidgetSettingsChanged;
             Settings.EnableBackground.SettingChanged += OnLayoutSettingsChanged;
             Settings.EnableLogotypeBulbAccentColor.SettingChanged += OnLayoutSettingsChanged;
             Settings.PositionLogotypeHorizontal.SettingChanged += OnLayoutSettingsChanged;
@@ -51,6 +53,8 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
         public static void UnsubscribeFromLayoutSettingsChanges()
         {
             Settings.EnableTopGlow.SettingChanged -= OnLayoutSettingsChanged;
+            Settings.SeasonWidgetMode.SettingChanged -= OnSeasonWidgetSettingsChanged;
+            Settings.SeasonWidgetScale.SettingChanged -= OnSeasonWidgetSettingsChanged;
             Settings.EnableBackground.SettingChanged -= OnLayoutSettingsChanged;
             Settings.EnableLogotypeBulbAccentColor.SettingChanged -= OnLayoutSettingsChanged;
             Settings.PositionLogotypeHorizontal.SettingChanged -= OnLayoutSettingsChanged;
@@ -113,12 +117,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             }
 
             MainMenuLayoutRuntime.HideGameObject(menuScreen, MenuOverhaulConstants.MenuScreen.WarningField);
-
-            // EFT 1.x season widget sits where the custom button column is placed.
-            if (menuScreen._seasonWidget != null)
-            {
-                menuScreen._seasonWidget.gameObject.SetActive(!Settings.HideSeasonWidget.Value);
-            }
+            SeasonWidgetLayout.Apply(menuScreen);
         }
 
         private static void ApplyEnvironmentLayout(MainMenuLayoutRuntime.EnvironmentObjects env)
@@ -165,6 +164,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
         }
 
         private static void OnLayoutSettingsChanged(object sender, System.EventArgs e) => UpdateLayoutElements();
+        private static void OnSeasonWidgetSettingsChanged(object sender, System.EventArgs e) => SeasonWidgetLayout.Apply(null);
         private static void OnScaleBackgroundChanged(object sender, System.EventArgs e) => UpdateCustomPlaneScale();
         private static void OnMenuIconVisibilityChanged(object sender, System.EventArgs e) => MainMenuButtonsService.UpdateMenuIconVisibility();
         private static void OnButtonGroupPositionChanged(object sender, System.EventArgs e) => MainMenuButtonsService.UpdateMenuButtonPositions();

@@ -17,7 +17,8 @@ namespace MoxoPixel.MenuOverhaul.Utils
 
         public static ConfigEntry<bool> EnableBackground;
         public static ConfigEntry<bool> EnableTopGlow;
-        public static ConfigEntry<bool> HideSeasonWidget;
+        public static ConfigEntry<string> SeasonWidgetMode;
+        public static ConfigEntry<float> SeasonWidgetScale;
         public static ConfigEntry<bool> EnableLogotypeBulbAccentColor;
         public static ConfigEntry<bool> EnableExtraShadows;
         public static ConfigEntry<bool> EnableLargerPlayerModel;
@@ -77,13 +78,22 @@ namespace MoxoPixel.MenuOverhaul.Utils
                     null,
                     new ConfigurationManagerAttributes { })));
 
-            ConfigEntries.Add(HideSeasonWidget = config.Bind(
+            ConfigEntries.Add(SeasonWidgetMode = config.Bind(
                 GeneralSectionTitle,
-                "Hide Season Widget",
-                true,
+                "Season Widget",
+                Helpers.SeasonWidgetLayout.ModeTopRight,
                 new ConfigDescription(
-                    "Hide the season progress widget on the main menu, which overlaps the custom button layout. Applies the next time the main menu is shown.",
-                    null,
+                    "Placement of the season progress widget on the main menu. The default placement overlaps the custom button column.",
+                    new AcceptableValueList<string>(Helpers.SeasonWidgetLayout.ModeTopRight, Helpers.SeasonWidgetLayout.ModeDefault, Helpers.SeasonWidgetLayout.ModeHidden),
+                    new ConfigurationManagerAttributes { })));
+
+            ConfigEntries.Add(SeasonWidgetScale = config.Bind(
+                AdjustmentsSectionTitle,
+                "Season Widget Scale",
+                0.6f,
+                new ConfigDescription(
+                    "Size of the season widget when placed in the top right",
+                    new AcceptableValueRange<float>(0.3f, 1f),
                     new ConfigurationManagerAttributes { })));
 
             ConfigEntries.Add(EnableLogotypeBulbAccentColor = config.Bind(

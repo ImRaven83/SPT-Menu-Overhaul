@@ -24,6 +24,7 @@ Install the mod by dragging the first folder in the zip into your SPT install di
     *   Adjust the horizontal position of the player model.
     *   Adjust the horizontal rotation of the player model.
     *   Enable a larger/closer player model framing.
+    *   Make the player model bigger or smaller with the `Player Model Size` slider.
     *   Enable extra shadows for a more detailed player model.
     *   Toggle high-quality player preview rendering (sharper image, higher GPU usage).
     *   Toggle default EFT player preview animation behavior.

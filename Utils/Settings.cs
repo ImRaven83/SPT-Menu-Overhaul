@@ -46,6 +46,7 @@ namespace MoxoPixel.MenuOverhaul.Utils
         public static ConfigEntry<float> PositionLogotypeHorizontal;
         public static ConfigEntry<float> PositionLogotypeVertical;
         public static ConfigEntry<float> PositionPlayerModelHorizontal;
+        public static ConfigEntry<float> PlayerModelSize;
         public static ConfigEntry<float> PositionBottomFieldHorizontal;
         public static ConfigEntry<float> PositionBottomFieldVertical;
         public static ConfigEntry<float> ScaleBackgroundX;
@@ -339,6 +340,15 @@ namespace MoxoPixel.MenuOverhaul.Utils
                 new ConfigDescription(
                     "Adjust the horizontal position of the player model in the main menu",
                     new AcceptableValueRange<float>(-600f, 1800f),
+                    new ConfigurationManagerAttributes { })));
+
+            ConfigEntries.Add(PlayerModelSize = config.Bind(
+                AdjustmentsSectionTitle,
+                "Player Model Size",
+                1f,
+                new ConfigDescription(
+                    "Make the player model in the main menu bigger or smaller (1 = default size). The name/level panel is not affected.",
+                    new AcceptableValueRange<float>(0.5f, 2f),
                     new ConfigurationManagerAttributes { })));
 
             ConfigEntries.Add(PositionBottomFieldHorizontal = config.Bind(

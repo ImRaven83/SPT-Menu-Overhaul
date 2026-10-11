@@ -49,6 +49,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             Settings.RotationPlayerModelHorizontal.SettingChanged += OnPlayerModelRotationChanged;
             Settings.AccentColor.SettingChanged += OnAccentColorChanged;
             Settings.EnableLargerPlayerModel.SettingChanged += OnLargerPlayerModelChanged;
+            Settings.PlayerModelSize.SettingChanged += OnPlayerModelSizeChanged;
             Settings.EnableHighQualityPlayerPreview.SettingChanged += OnPlayerPreviewQualityChanged;
             Settings.EnableDefaultPlayerAnimation.SettingChanged += OnPlayerPreviewAnimationChanged;
             Settings.CameraInventoryPositionX.SettingChanged += OnCameraInventoryTransformChanged;
@@ -71,6 +72,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             Settings.RotationPlayerModelHorizontal.SettingChanged -= OnPlayerModelRotationChanged;
             Settings.AccentColor.SettingChanged -= OnAccentColorChanged;
             Settings.EnableLargerPlayerModel.SettingChanged -= OnLargerPlayerModelChanged;
+            Settings.PlayerModelSize.SettingChanged -= OnPlayerModelSizeChanged;
             Settings.EnableHighQualityPlayerPreview.SettingChanged -= OnPlayerPreviewQualityChanged;
             Settings.EnableDefaultPlayerAnimation.SettingChanged -= OnPlayerPreviewAnimationChanged;
             Settings.CameraInventoryPositionX.SettingChanged -= OnCameraInventoryTransformChanged;
@@ -124,6 +126,8 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             UpdateCameraRotation();
             ConfigurePreviewRenderQuality(ClonedPlayerModelView);
         }
+
+        private static void OnPlayerModelSizeChanged(object sender, EventArgs e) => ConfigurePreviewRenderQuality(ClonedPlayerModelView);
 
         private static void OnPlayerPreviewQualityChanged(object sender, EventArgs e)
         {
@@ -365,8 +369,10 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
                     previewRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, baseSize.x * previewSupersampleFactor);
                     previewRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, baseSize.y * previewSupersampleFactor);
 
+                    // The rendered image is scaled (not the whole view) so the size setting leaves the BottomField panel alone.
+                    float modelSize = Mathf.Clamp(Settings.PlayerModelSize.Value, 0.5f, 2f);
                     Vector3 baseScale = _basePreviewViewportScale.Value;
-                    previewRect.localScale = new Vector3(baseScale.x / previewSupersampleFactor, baseScale.y / previewSupersampleFactor, baseScale.z);
+                    previewRect.localScale = new Vector3(baseScale.x * modelSize / previewSupersampleFactor, baseScale.y * modelSize / previewSupersampleFactor, baseScale.z);
                 }
             }
 

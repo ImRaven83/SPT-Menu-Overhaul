@@ -17,6 +17,7 @@ namespace MoxoPixel.MenuOverhaul.Utils
 
         public static ConfigEntry<bool> EnableBackground;
         public static ConfigEntry<bool> EnableTopGlow;
+        public static ConfigEntry<bool> HideSeasonWidget;
         public static ConfigEntry<bool> EnableLogotypeBulbAccentColor;
         public static ConfigEntry<bool> EnableExtraShadows;
         public static ConfigEntry<bool> EnableLargerPlayerModel;
@@ -73,6 +74,15 @@ namespace MoxoPixel.MenuOverhaul.Utils
                 true,
                 new ConfigDescription(
                     "Enable or disable the blue/yellow top glow in the main menu",
+                    null,
+                    new ConfigurationManagerAttributes { })));
+
+            ConfigEntries.Add(HideSeasonWidget = config.Bind(
+                GeneralSectionTitle,
+                "Hide Season Widget",
+                true,
+                new ConfigDescription(
+                    "Hide the season progress widget on the main menu, which overlaps the custom button layout. Applies the next time the main menu is shown.",
                     null,
                     new ConfigurationManagerAttributes { })));
 

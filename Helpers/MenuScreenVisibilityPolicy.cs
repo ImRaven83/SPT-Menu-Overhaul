@@ -133,7 +133,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers
 
                 if (env != null && env.EnvironmentUISceneFactory != null)
                 {
-                    Transform factoryCameraContainer = env.EnvironmentUISceneFactory.transform.Find(MenuOverhaulConstants.Environment.FactoryCameraContainer);
+                    Transform factoryCameraContainer = MainMenuLayoutRuntime.FindDeep(env.EnvironmentUISceneFactory.transform, MenuOverhaulConstants.Environment.FactoryCameraContainer);
                     if (factoryCameraContainer != null)
                     {
                         Transform mainMenuCamera = factoryCameraContainer.Find(MenuOverhaulConstants.Environment.MainMenuCamera);
@@ -196,7 +196,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers
 
                 if (env != null && env.EnvironmentUISceneFactory != null)
                 {
-                    Transform factoryCameraContainer = env.EnvironmentUISceneFactory.transform.Find(MenuOverhaulConstants.Environment.FactoryCameraContainer);
+                    Transform factoryCameraContainer = MainMenuLayoutRuntime.FindDeep(env.EnvironmentUISceneFactory.transform, MenuOverhaulConstants.Environment.FactoryCameraContainer);
                     if (factoryCameraContainer != null)
                     {
                         Transform mainMenuCamera = factoryCameraContainer.Find(MenuOverhaulConstants.Environment.MainMenuCamera);

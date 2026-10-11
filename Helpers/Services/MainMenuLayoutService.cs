@@ -113,6 +113,12 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             }
 
             MainMenuLayoutRuntime.HideGameObject(menuScreen, MenuOverhaulConstants.MenuScreen.WarningField);
+
+            // EFT 1.x season widget sits where the custom button column is placed.
+            if (menuScreen._seasonWidget != null)
+            {
+                menuScreen._seasonWidget.gameObject.SetActive(!Settings.HideSeasonWidget.Value);
+            }
         }
 
         private static void ApplyEnvironmentLayout(MainMenuLayoutRuntime.EnvironmentObjects env)

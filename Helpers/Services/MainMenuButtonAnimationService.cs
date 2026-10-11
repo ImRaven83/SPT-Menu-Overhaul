@@ -50,15 +50,12 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
 
             const float duration = 0.15f;
             instance.Image.color = WithAlpha(normalImageColor, 0f);
-            // DefaultUIButtonAnimation.ProcessTween/ProcessMultipleTweens no longer exist in SPT 5.0;
-            // the fades are keyed on their Image targets so they can be killed before being replaced.
-            instance.Image.DOKill();
-            instance.Image.DOFade(1f, duration);
+            // DefaultUIButtonAnimation.ProcessTween/ProcessMultipleTweens no longer exist in SPT 5.0.
+            FadeIn(instance.Image, duration);
 
             if (instance.Icon != null && iconsEnabled)
             {
-                instance.Icon.DOKill();
-                instance.Icon.DOFade(1f, duration);
+                FadeIn(instance.Icon, duration);
             }
         }
 
@@ -108,14 +105,22 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             const float iconFadeDuration = 0.1f;
 
             instance.Image.color = WithAlpha(highlightedImageColor, 0f);
-            instance.Image.DOKill();
-            instance.Image.DOFade(1f, imageFadeDuration);
+            FadeIn(instance.Image, imageFadeDuration);
 
             if (instance.Icon != null && iconsEnabled)
             {
-                instance.Icon.DOKill();
-                instance.Icon.DOFade(1f, iconFadeDuration);
+                FadeIn(instance.Icon, iconFadeDuration);
             }
+        }
+
+        // The fade is identified by the image's GameObject so only our previous fade is replaced.
+        // Killing by the Image target (DOKill) would also kill DefaultUIButtonAnimation's own cached tweens,
+        // which DOTween then reports as "This Tween has been killed and is now invalid".
+        private static void FadeIn(UnityEngine.UI.Image image, float duration)
+        {
+            GameObject fadeId = image.gameObject;
+            DOTween.Kill(fadeId, false);
+            image.DOFade(1f, duration).SetId(fadeId);
         }
 
         private static void EnsureReflectionInitialized()

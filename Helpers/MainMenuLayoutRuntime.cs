@@ -48,13 +48,22 @@ namespace MoxoPixel.MenuOverhaul.Helpers
             GameObject commonObj = commonTransform != null ? commonTransform.gameObject : null;
             if (commonObj == null) { MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "Common GameObject not found in Environment UI."); return null; }
 
-            Transform environmentUISceneFactoryTransform = environmentUI.transform.Find(MenuOverhaulConstants.Environment.EnvironmentUISceneFactory);
-            GameObject environmentUISceneFactory = environmentUISceneFactoryTransform != null ? environmentUISceneFactoryTransform.gameObject : null;
-            if (environmentUISceneFactory == null) { MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "EnvironmentUISceneFactory GameObject not found in Environment UI."); return null; }
+            GameObject environmentUISceneFactory = FindEnvironmentSceneRoot(environmentUI);
+            if (environmentUISceneFactory == null)
+            {
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.EnvironmentSceneMissing", "Main menu environment scene not found. Make sure the Factory theme is applied in the game settings.");
+                DumpHierarchyOnce("Environment UI", environmentUI.transform);
+                return null;
+            }
 
-            Transform factoryLayoutTransform = environmentUISceneFactory.transform.Find(MenuOverhaulConstants.Environment.FactoryLayout);
+            Transform factoryLayoutTransform = FindDeep(environmentUISceneFactory.transform, MenuOverhaulConstants.Environment.FactoryLayout);
             GameObject factoryLayout = factoryLayoutTransform != null ? factoryLayoutTransform.gameObject : null;
-            if (factoryLayout == null) { MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "FactoryLayout GameObject not found in EnvironmentUISceneFactory."); return null; }
+            if (factoryLayout == null)
+            {
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.FactoryLayoutMissing", $"FactoryLayout GameObject not found in '{environmentUISceneFactory.name}'. Make sure the Factory theme is applied in the game settings.");
+                DumpHierarchyOnce(environmentUISceneFactory.name, environmentUISceneFactory.transform);
+                return null;
+            }
 
             return new EnvironmentObjects
             {
@@ -63,6 +72,64 @@ namespace MoxoPixel.MenuOverhaul.Helpers
                 EnvironmentUISceneFactory = environmentUISceneFactory,
                 FactoryLayout = factoryLayout
             };
+        }
+
+        // EFT 1.x loads each menu environment as its own scene instead of nesting it under "Environment UI".
+        // Try the legacy child path, then the scene root by name, then the environment EnvironmentUI currently shows.
+        private static GameObject FindEnvironmentSceneRoot(GameObject environmentUI)
+        {
+            Transform legacy = environmentUI.transform.Find(MenuOverhaulConstants.Environment.EnvironmentUISceneFactory);
+            if (legacy != null) return legacy.gameObject;
+
+            GameObject sceneRoot = GameObject.Find(MenuOverhaulConstants.Environment.EnvironmentUISceneFactory);
+            if (sceneRoot != null) return sceneRoot;
+
+            EnvironmentUI environment = environmentUI.GetComponent<EnvironmentUI>();
+            if (environment == null) environment = UnityEngine.Object.FindObjectOfType<EnvironmentUI>();
+            EnvironmentUIRoot current = environment != null ? environment._currentEnvironment : null;
+            if (current == null) return null;
+
+            MenuDiagnosticsLogger.Debug(LogSubsystem.Layout, $"Using current environment root '{current.gameObject.name}' ({environment._currentEnvironmentUiType}).");
+            return current.gameObject;
+        }
+
+        internal static Transform FindDeep(Transform root, string name)
+        {
+            if (root == null) return null;
+            if (root.name == name) return root;
+
+            Transform direct = root.Find(name);
+            if (direct != null) return direct;
+
+            for (int i = 0; i < root.childCount; i++)
+            {
+                Transform found = FindDeep(root.GetChild(i), name);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
+        private static readonly HashSet<string> DumpedHierarchies = new HashSet<string>();
+
+        // Writes the object tree once so changed EFT scene layouts can be diagnosed from LogOutput.log.
+        private static void DumpHierarchyOnce(string key, Transform root)
+        {
+            if (root == null || !DumpedHierarchies.Add(key)) return;
+
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine($"Hierarchy of '{root.name}' (for diagnosing EFT layout changes):");
+            AppendHierarchy(builder, root, 0, 4);
+            MenuDiagnosticsLogger.Info(LogSubsystem.Layout, builder.ToString());
+        }
+
+        private static void AppendHierarchy(System.Text.StringBuilder builder, Transform node, int depth, int maxDepth)
+        {
+            builder.Append(' ', depth * 2).Append(node.name).AppendLine(node.gameObject.activeSelf ? string.Empty : " (inactive)");
+            if (depth >= maxDepth) return;
+            for (int i = 0; i < node.childCount && i < 40; i++)
+            {
+                AppendHierarchy(builder, node.GetChild(i), depth + 1, maxDepth);
+            }
         }
 
         public static GameObject GetBackgroundPlane()

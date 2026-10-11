@@ -1,7 +1,7 @@
 using System.Globalization;
 using System;
 using EFT;
-using SPT.Reflection.Utils;
+using SPTushonka.Reflection.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

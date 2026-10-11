@@ -18,21 +18,19 @@ namespace MoxoPixel.MenuOverhaul.Infrastructure.Reflection
         public const string HighlightedIconColorFieldKey = "DefaultUIButtonAnimation.HighlightedIconColorField";
         public const string HighlightedImageColorFieldKey = "DefaultUIButtonAnimation.HighlightedImageColorField";
         public const string MenuScreenPlayButtonFieldKey = "MenuScreen.PlayButtonField";
-        public const string MenuScreenAlphaWarningFieldKey = "MenuScreen.AlphaWarningField";
         public const string MenuScreenWarningFieldKey = "MenuScreen.WarningField";
 
         public static MethodInfo DefaultButtonIdleMethod { get; private set; }
         public static MethodInfo DefaultButtonHighlightedMethod { get; private set; }
 
-        public static FieldInfo NormalIconColorField { get; private set; }
-        public static FieldInfo NormalLabelColorField { get; private set; }
-        public static FieldInfo NormalImageColorField { get; private set; }
-        public static FieldInfo BackgroundNormalStateAlphaField { get; private set; }
-        public static FieldInfo HighlightedIconColorField { get; private set; }
-        public static FieldInfo HighlightedImageColorField { get; private set; }
-        public static FieldInfo MenuScreenPlayButtonField { get; private set; }
-        public static FieldInfo MenuScreenAlphaWarningField { get; private set; }
-        public static FieldInfo MenuScreenWarningField { get; private set; }
+        public static PropertyInfo NormalIconColorField { get; private set; }
+        public static PropertyInfo NormalLabelColorField { get; private set; }
+        public static PropertyInfo NormalImageColorField { get; private set; }
+        public static PropertyInfo BackgroundNormalStateAlphaField { get; private set; }
+        public static PropertyInfo HighlightedIconColorField { get; private set; }
+        public static PropertyInfo HighlightedImageColorField { get; private set; }
+        public static PropertyInfo MenuScreenPlayButtonField { get; private set; }
+        public static PropertyInfo MenuScreenWarningField { get; private set; }
 
         private static readonly HashSet<string> WarnedMissingMembers = new HashSet<string>();
 
@@ -97,11 +95,6 @@ namespace MoxoPixel.MenuOverhaul.Infrastructure.Reflection
                 MenuOverhaulConstants.MenuScreen.PlayButtonField,
                 MenuScreenPlayButtonFieldKey);
 
-            MenuScreenAlphaWarningField = ResolveField(
-                typeof(MenuScreen),
-                MenuOverhaulConstants.MenuScreen.AlphaWarningField,
-                MenuScreenAlphaWarningFieldKey);
-
             MenuScreenWarningField = ResolveField(
                 typeof(MenuScreen),
                 MenuOverhaulConstants.MenuScreen.WarningField,
@@ -140,17 +133,13 @@ namespace MoxoPixel.MenuOverhaul.Infrastructure.Reflection
             return MissingMembers;
         }
 
-        public static bool TryGetMenuScreenField(string fieldName, out FieldInfo field, out string fieldKey)
+        public static bool TryGetMenuScreenField(string fieldName, out PropertyInfo field, out string fieldKey)
         {
             switch (fieldName)
             {
                 case MenuOverhaulConstants.MenuScreen.PlayButtonField:
                     field = MenuScreenPlayButtonField;
                     fieldKey = MenuScreenPlayButtonFieldKey;
-                    return true;
-                case MenuOverhaulConstants.MenuScreen.AlphaWarningField:
-                    field = MenuScreenAlphaWarningField;
-                    fieldKey = MenuScreenAlphaWarningFieldKey;
                     return true;
                 case MenuOverhaulConstants.MenuScreen.WarningField:
                     field = MenuScreenWarningField;
@@ -170,9 +159,11 @@ namespace MoxoPixel.MenuOverhaul.Infrastructure.Reflection
             return method;
         }
 
-        private static FieldInfo ResolveField(Type type, string fieldName, string memberKey)
+        // Under IL2CPP the Il2CppInterop proxy assemblies expose every native field (private ones included)
+        // as a public instance property with the original field name, so "fields" are resolved as properties.
+        private static PropertyInfo ResolveField(Type type, string fieldName, string memberKey)
         {
-            FieldInfo field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            PropertyInfo field = type.GetProperty(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             TrackResolution(field, memberKey);
             return field;
         }

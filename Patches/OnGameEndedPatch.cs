@@ -1,5 +1,5 @@
 using EFT;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 using MoxoPixel.MenuOverhaul.Helpers;
 using MoxoPixel.MenuOverhaul.Helpers.Services;

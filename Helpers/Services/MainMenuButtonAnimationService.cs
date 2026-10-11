@@ -50,11 +50,12 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
 
             const float duration = 0.15f;
             instance.Image.color = WithAlpha(normalImageColor, 0f);
-            instance.ProcessMultipleTweens(new Tween[] { instance.Image.DOFade(1f, duration) });
+            // DefaultUIButtonAnimation.ProcessTween/ProcessMultipleTweens no longer exist in SPT 5.0.
+            FadeIn(instance.Image, duration);
 
             if (instance.Icon != null && iconsEnabled)
             {
-                instance.ProcessTween(instance.Icon.DOFade(1f, duration));
+                FadeIn(instance.Icon, duration);
             }
         }
 
@@ -104,12 +105,22 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             const float iconFadeDuration = 0.1f;
 
             instance.Image.color = WithAlpha(highlightedImageColor, 0f);
-            instance.ProcessMultipleTweens(new Tween[] { instance.Image.DOFade(1f, imageFadeDuration) });
+            FadeIn(instance.Image, imageFadeDuration);
 
             if (instance.Icon != null && iconsEnabled)
             {
-                instance.ProcessTween(instance.Icon.DOFade(1f, iconFadeDuration));
+                FadeIn(instance.Icon, iconFadeDuration);
             }
+        }
+
+        // The fade is identified by the image's GameObject so only our previous fade is replaced.
+        // Killing by the Image target (DOKill) would also kill DefaultUIButtonAnimation's own cached tweens,
+        // which DOTween then reports as "This Tween has been killed and is now invalid".
+        private static void FadeIn(UnityEngine.UI.Image image, float duration)
+        {
+            GameObject fadeId = image.gameObject;
+            DOTween.Kill(fadeId, false);
+            image.DOFade(1f, duration).SetId(fadeId);
         }
 
         private static void EnsureReflectionInitialized()
@@ -120,13 +131,13 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             }
         }
 
-        private static Color ReadColor(System.Reflection.FieldInfo field, string key, DefaultUIButtonAnimation instance, Color fallback)
+        private static Color ReadColor(System.Reflection.PropertyInfo field, string key, DefaultUIButtonAnimation instance, Color fallback)
         {
             EftReflectionMap.WarnIfMissing(field, key);
             return field != null ? (Color)field.GetValue(instance) : fallback;
         }
 
-        private static float ReadFloat(System.Reflection.FieldInfo field, string key, DefaultUIButtonAnimation instance, float fallback)
+        private static float ReadFloat(System.Reflection.PropertyInfo field, string key, DefaultUIButtonAnimation instance, float fallback)
         {
             EftReflectionMap.WarnIfMissing(field, key);
             return field != null ? (float)field.GetValue(instance) : fallback;

@@ -44,6 +44,8 @@ namespace MoxoPixel.MenuOverhaul.Helpers
                 texture.name = Path.GetFileNameWithoutExtension(filePath);
                 texture.wrapMode = TextureWrapMode.Clamp;
                 texture.filterMode = FilterMode.Bilinear;
+                // Unity cannot see managed references under IL2CPP, so keep cached textures from being unloaded as unused.
+                texture.hideFlags |= HideFlags.DontUnloadUnusedAsset;
 
                 TextureCache[cacheKey] = texture;
                 return texture;
@@ -75,6 +77,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers
             }
 
             Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+            sprite.hideFlags |= HideFlags.DontUnloadUnusedAsset;
             SpriteCache[cacheKey] = sprite;
             return sprite;
         }

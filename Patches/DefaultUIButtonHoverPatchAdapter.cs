@@ -1,7 +1,7 @@
 using EFT.UI;
 using MoxoPixel.MenuOverhaul.Helpers.Services;
 using MoxoPixel.MenuOverhaul.Infrastructure.Reflection;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace MoxoPixel.MenuOverhaul.Patches

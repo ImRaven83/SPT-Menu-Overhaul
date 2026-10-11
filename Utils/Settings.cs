@@ -1,4 +1,4 @@
-﻿using BepInEx.Configuration;
+using BepInEx.Configuration;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,6 +17,8 @@ namespace MoxoPixel.MenuOverhaul.Utils
 
         public static ConfigEntry<bool> EnableBackground;
         public static ConfigEntry<bool> EnableTopGlow;
+        public static ConfigEntry<string> SeasonWidgetMode;
+        public static ConfigEntry<float> SeasonWidgetScale;
         public static ConfigEntry<bool> EnableLogotypeBulbAccentColor;
         public static ConfigEntry<bool> EnableExtraShadows;
         public static ConfigEntry<bool> EnableLargerPlayerModel;
@@ -44,6 +46,7 @@ namespace MoxoPixel.MenuOverhaul.Utils
         public static ConfigEntry<float> PositionLogotypeHorizontal;
         public static ConfigEntry<float> PositionLogotypeVertical;
         public static ConfigEntry<float> PositionPlayerModelHorizontal;
+        public static ConfigEntry<float> PlayerModelSize;
         public static ConfigEntry<float> PositionBottomFieldHorizontal;
         public static ConfigEntry<float> PositionBottomFieldVertical;
         public static ConfigEntry<float> ScaleBackgroundX;
@@ -56,6 +59,8 @@ namespace MoxoPixel.MenuOverhaul.Utils
 
         public static void Init(ConfigFile config)
         {
+            ColorTomlConverter.Register();
+
             ConfigEntries.Add(EnableBackground = config.Bind(
                 GeneralSectionTitle,
                 "Enable Background",
@@ -72,6 +77,24 @@ namespace MoxoPixel.MenuOverhaul.Utils
                 new ConfigDescription(
                     "Enable or disable the blue/yellow top glow in the main menu",
                     null,
+                    new ConfigurationManagerAttributes { })));
+
+            ConfigEntries.Add(SeasonWidgetMode = config.Bind(
+                GeneralSectionTitle,
+                "Season Widget",
+                Helpers.SeasonWidgetLayout.ModeTopRight,
+                new ConfigDescription(
+                    "Placement of the season progress widget on the main menu. The default placement overlaps the custom button column.",
+                    new AcceptableValueList<string>(Helpers.SeasonWidgetLayout.ModeTopRight, Helpers.SeasonWidgetLayout.ModeDefault, Helpers.SeasonWidgetLayout.ModeHidden),
+                    new ConfigurationManagerAttributes { })));
+
+            ConfigEntries.Add(SeasonWidgetScale = config.Bind(
+                AdjustmentsSectionTitle,
+                "Season Widget Scale",
+                0.6f,
+                new ConfigDescription(
+                    "Size of the season widget when placed in the top right",
+                    new AcceptableValueRange<float>(0.3f, 1f),
                     new ConfigurationManagerAttributes { })));
 
             ConfigEntries.Add(EnableLogotypeBulbAccentColor = config.Bind(
@@ -317,6 +340,15 @@ namespace MoxoPixel.MenuOverhaul.Utils
                 new ConfigDescription(
                     "Adjust the horizontal position of the player model in the main menu",
                     new AcceptableValueRange<float>(-600f, 1800f),
+                    new ConfigurationManagerAttributes { })));
+
+            ConfigEntries.Add(PlayerModelSize = config.Bind(
+                AdjustmentsSectionTitle,
+                "Player Model Size",
+                1f,
+                new ConfigDescription(
+                    "Make the player model in the main menu bigger or smaller (1 = default size). The name/level panel is not affected.",
+                    new AcceptableValueRange<float>(0.5f, 2f),
                     new ConfigurationManagerAttributes { })));
 
             ConfigEntries.Add(PositionBottomFieldHorizontal = config.Bind(

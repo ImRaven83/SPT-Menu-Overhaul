@@ -6,7 +6,7 @@ namespace MoxoPixel.MenuOverhaul.Utils
         {
             public const string Guid = "com.moxopixel.menuoverhaul";
             public const string Name = "MoxoPixel-MenuOverhaul";
-            public const string Version = "1.2.3";
+            public const string Version = "2.0.0";
         }
 
         internal static class Reflection
@@ -27,7 +27,6 @@ namespace MoxoPixel.MenuOverhaul.Utils
         {
             public const string Name = "MenuScreen";
             public const string ScenePath = "Common UI/Common UI/MenuScreen";
-            public const string AlphaWarningField = "_alphaWarningGameObject";
             public const string WarningField = "_warningGameObject";
             public const string PlayButtonField = "_playButton";
         }

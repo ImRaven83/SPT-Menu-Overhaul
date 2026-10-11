@@ -242,7 +242,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers
                 EftReflectionMap.Initialize();
             }
 
-            FieldInfo playButtonField = EftReflectionMap.MenuScreenPlayButtonField;
+            PropertyInfo playButtonField = EftReflectionMap.MenuScreenPlayButtonField;
             EftReflectionMap.WarnIfMissing(playButtonField, EftReflectionMap.MenuScreenPlayButtonFieldKey);
             if (playButtonField != null)
             {
@@ -367,7 +367,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers
 
             if (anchoredPosition.HasValue)
             {
-                RectTransform iconRectTransform = iconTransform as RectTransform;
+                RectTransform iconRectTransform = iconTransform.TryCast<RectTransform>();
                 if (iconRectTransform != null)
                 {
                     iconRectTransform.anchoredPosition = anchoredPosition.Value;
@@ -379,7 +379,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers
             }
         }
 
-        private static void ModifyButtonTextComponent(FieldInfo buttonFieldInfo, MenuScreen screenInstance, string newText = null, int fontSize = 0)
+        private static void ModifyButtonTextComponent(PropertyInfo buttonFieldInfo, MenuScreen screenInstance, string newText = null, int fontSize = 0)
         {
             if (buttonFieldInfo == null || screenInstance == null)
             {

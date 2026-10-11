@@ -13,7 +13,8 @@ namespace MoxoPixel.MenuOverhaul.Helpers
     public static class MainMenuLayoutRuntime
     {
         private static bool isAlignmentCameraMoved;
-        private static readonly string PluginResourcesRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BepInEx", "plugins", "MoxoPixel.MenuOverhaul", "Resources");
+        // Resources ship next to the plugin DLL. Under BepInEx 6 (IL2CPP) the .NET host's base directory is not the game folder.
+        private static readonly string PluginResourcesRoot = Path.Combine(Path.GetDirectoryName(typeof(MainMenuLayoutRuntime).Assembly.Location) ?? string.Empty, "Resources");
         private static readonly string IconsDirectory = Path.Combine(PluginResourcesRoot, "icons");
         private static readonly string BackgroundDirectory = Path.Combine(PluginResourcesRoot, "background");
         private static readonly Dictionary<string, string> ButtonNameToFileNameMap = new Dictionary<string, string>
@@ -41,19 +42,28 @@ namespace MoxoPixel.MenuOverhaul.Helpers
         public static EnvironmentObjects FindEnvironmentObjects()
         {
             GameObject environmentUI = GameObject.Find(MenuOverhaulConstants.Environment.EnvironmentUI);
-            if (environmentUI == null) { MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "Environment UI GameObject not found."); return null; }
+            if (environmentUI == null) { MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.EnvironmentUiMissing", "Environment UI GameObject not found."); return null; }
 
             Transform commonTransform = environmentUI.transform.Find(MenuOverhaulConstants.Environment.Common);
             GameObject commonObj = commonTransform != null ? commonTransform.gameObject : null;
-            if (commonObj == null) { MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "Common GameObject not found in Environment UI."); return null; }
+            if (commonObj == null) { MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.CommonMissing", "Common GameObject not found in Environment UI."); return null; }
 
-            Transform environmentUISceneFactoryTransform = environmentUI.transform.Find(MenuOverhaulConstants.Environment.EnvironmentUISceneFactory);
-            GameObject environmentUISceneFactory = environmentUISceneFactoryTransform != null ? environmentUISceneFactoryTransform.gameObject : null;
-            if (environmentUISceneFactory == null) { MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "EnvironmentUISceneFactory GameObject not found in Environment UI."); return null; }
+            GameObject environmentUISceneFactory = FindEnvironmentSceneRoot(environmentUI);
+            if (environmentUISceneFactory == null)
+            {
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.EnvironmentSceneMissing", "Main menu environment scene not found. Make sure the Factory theme is applied in the game settings.");
+                DumpHierarchyOnce("Environment UI", environmentUI.transform);
+                return null;
+            }
 
-            Transform factoryLayoutTransform = environmentUISceneFactory.transform.Find(MenuOverhaulConstants.Environment.FactoryLayout);
+            Transform factoryLayoutTransform = FindDeep(environmentUISceneFactory.transform, MenuOverhaulConstants.Environment.FactoryLayout);
             GameObject factoryLayout = factoryLayoutTransform != null ? factoryLayoutTransform.gameObject : null;
-            if (factoryLayout == null) { MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "FactoryLayout GameObject not found in EnvironmentUISceneFactory."); return null; }
+            if (factoryLayout == null)
+            {
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.FactoryLayoutMissing", $"FactoryLayout GameObject not found in '{environmentUISceneFactory.name}'. Make sure the Factory theme is applied in the game settings.");
+                DumpHierarchyOnce(environmentUISceneFactory.name, environmentUISceneFactory.transform);
+                return null;
+            }
 
             return new EnvironmentObjects
             {
@@ -64,12 +74,70 @@ namespace MoxoPixel.MenuOverhaul.Helpers
             };
         }
 
+        // EFT 1.x loads each menu environment as its own scene instead of nesting it under "Environment UI".
+        // Try the legacy child path, then the scene root by name, then the environment EnvironmentUI currently shows.
+        private static GameObject FindEnvironmentSceneRoot(GameObject environmentUI)
+        {
+            Transform legacy = environmentUI.transform.Find(MenuOverhaulConstants.Environment.EnvironmentUISceneFactory);
+            if (legacy != null) return legacy.gameObject;
+
+            GameObject sceneRoot = GameObject.Find(MenuOverhaulConstants.Environment.EnvironmentUISceneFactory);
+            if (sceneRoot != null) return sceneRoot;
+
+            EnvironmentUI environment = environmentUI.GetComponent<EnvironmentUI>();
+            if (environment == null) environment = UnityEngine.Object.FindObjectOfType<EnvironmentUI>();
+            EnvironmentUIRoot current = environment != null ? environment._currentEnvironment : null;
+            if (current == null) return null;
+
+            MenuDiagnosticsLogger.Debug(LogSubsystem.Layout, $"Using current environment root '{current.gameObject.name}' ({environment._currentEnvironmentUiType}).");
+            return current.gameObject;
+        }
+
+        internal static Transform FindDeep(Transform root, string name)
+        {
+            if (root == null) return null;
+            if (root.name == name) return root;
+
+            Transform direct = root.Find(name);
+            if (direct != null) return direct;
+
+            for (int i = 0; i < root.childCount; i++)
+            {
+                Transform found = FindDeep(root.GetChild(i), name);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
+        private static readonly HashSet<string> DumpedHierarchies = new HashSet<string>();
+
+        // Writes the object tree once so changed EFT scene layouts can be diagnosed from LogOutput.log.
+        internal static void DumpHierarchyOnce(string key, Transform root)
+        {
+            if (root == null || !DumpedHierarchies.Add(key)) return;
+
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine($"Hierarchy of '{root.name}' (for diagnosing EFT layout changes):");
+            AppendHierarchy(builder, root, 0, 4);
+            MenuDiagnosticsLogger.Info(LogSubsystem.Layout, builder.ToString());
+        }
+
+        private static void AppendHierarchy(System.Text.StringBuilder builder, Transform node, int depth, int maxDepth)
+        {
+            builder.Append(' ', depth * 2).Append(node.name).AppendLine(node.gameObject.activeSelf ? string.Empty : " (inactive)");
+            if (depth >= maxDepth) return;
+            for (int i = 0; i < node.childCount && i < 40; i++)
+            {
+                AppendHierarchy(builder, node.GetChild(i), depth + 1, maxDepth);
+            }
+        }
+
         public static GameObject GetBackgroundPlane()
         {
             EnvironmentObjects envObjects = FindEnvironmentObjects();
             if (envObjects == null || envObjects.FactoryLayout == null)
             {
-                MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "GetBackgroundPlane - EnvironmentObjects or FactoryLayout not found.");
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.GetBackgroundPlane.EnvMissing", "GetBackgroundPlane - EnvironmentObjects or FactoryLayout not found.");
                 return null;
             }
             Transform backgroundPlaneTransform = envObjects.FactoryLayout.transform.Find(MenuOverhaulConstants.Environment.CustomPlane);
@@ -395,19 +463,20 @@ namespace MoxoPixel.MenuOverhaul.Helpers
             return materials;
         }
 
+        // Pixels are flipped in a managed array and written back with one SetPixels32 call:
+        // per-pixel GetPixel/SetPixel crosses the IL2CPP interop boundary millions of times on a full-size background.
         public static Texture2D FlipTextureVertically(Texture2D original)
         {
             if (original == null) return null;
-            Texture2D flipped = new Texture2D(original.width, original.height);
-            for (int y = 0; y < original.height; y++)
+            int width = original.width;
+            int height = original.height;
+            Color32[] source = original.GetPixels32();
+            Color32[] result = new Color32[source.Length];
+            for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < original.width; x++)
-                {
-                    flipped.SetPixel(x, original.height - y - 1, original.GetPixel(x, y));
-                }
+                Array.Copy(source, y * width, result, (height - y - 1) * width, width);
             }
-            flipped.Apply();
-            return flipped;
+            return CreateTexture(width, height, result);
         }
 
         public static Texture2D FlipTextureHorizontally(Texture2D original)
@@ -415,16 +484,27 @@ namespace MoxoPixel.MenuOverhaul.Helpers
             if (original == null) return null;
             int width = original.width;
             int height = original.height;
-            Texture2D flipped = new Texture2D(width, height);
+            Color32[] source = original.GetPixels32();
+            Color32[] result = new Color32[source.Length];
             for (int y = 0; y < height; y++)
             {
+                int row = y * width;
                 for (int x = 0; x < width; x++)
                 {
-                    flipped.SetPixel(width - x - 1, y, original.GetPixel(x, y));
+                    result[row + width - x - 1] = source[row + x];
                 }
             }
-            flipped.Apply();
-            return flipped;
+            return CreateTexture(width, height, result);
+        }
+
+        private static Texture2D CreateTexture(int width, int height, Color32[] pixels)
+        {
+            Texture2D texture = new Texture2D(width, height);
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            // Unity cannot see managed references under IL2CPP, so keep cached textures from being unloaded as unused.
+            texture.hideFlags |= HideFlags.DontUnloadUnusedAsset;
+            return texture;
         }
 
         private static void ConfigureLampContainer(Transform lampContainerTransform)
@@ -551,7 +631,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers
             EnvironmentObjects envObjects = FindEnvironmentObjects();
             if (envObjects == null || envObjects.EnvironmentUISceneFactory == null || envObjects.FactoryLayout == null || envObjects.EnvironmentUI == null)
             {
-                MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "DisableCameraMovement - Essential EnvironmentObjects not found.");
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.DisableCameraMovement.EnvMissing", "DisableCameraMovement - Essential EnvironmentObjects not found.");
                 return;
             }
             DeactivateDefaultMainMenuCamera(envObjects.EnvironmentUISceneFactory);

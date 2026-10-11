@@ -32,6 +32,8 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
         public static void SubscribeToLayoutSettingsChanges()
         {
             Settings.EnableTopGlow.SettingChanged += OnLayoutSettingsChanged;
+            Settings.SeasonWidgetMode.SettingChanged += OnSeasonWidgetSettingsChanged;
+            Settings.SeasonWidgetScale.SettingChanged += OnSeasonWidgetSettingsChanged;
             Settings.EnableBackground.SettingChanged += OnLayoutSettingsChanged;
             Settings.EnableLogotypeBulbAccentColor.SettingChanged += OnLayoutSettingsChanged;
             Settings.PositionLogotypeHorizontal.SettingChanged += OnLayoutSettingsChanged;
@@ -51,6 +53,8 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
         public static void UnsubscribeFromLayoutSettingsChanges()
         {
             Settings.EnableTopGlow.SettingChanged -= OnLayoutSettingsChanged;
+            Settings.SeasonWidgetMode.SettingChanged -= OnSeasonWidgetSettingsChanged;
+            Settings.SeasonWidgetScale.SettingChanged -= OnSeasonWidgetSettingsChanged;
             Settings.EnableBackground.SettingChanged -= OnLayoutSettingsChanged;
             Settings.EnableLogotypeBulbAccentColor.SettingChanged -= OnLayoutSettingsChanged;
             Settings.PositionLogotypeHorizontal.SettingChanged -= OnLayoutSettingsChanged;
@@ -72,7 +76,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             MainMenuLayoutRuntime.EnvironmentObjects environmentObjects = MainMenuLayoutRuntime.FindEnvironmentObjects();
             if (environmentObjects == null)
             {
-                MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "UpdateLayoutElements - Could not find environment objects.");
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.UpdateLayoutElements.EnvMissing", "UpdateLayoutElements - Could not find environment objects.");
                 return;
             }
 
@@ -112,8 +116,8 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
                 return;
             }
 
-            MainMenuLayoutRuntime.HideGameObject(menuScreen, MenuOverhaulConstants.MenuScreen.AlphaWarningField);
             MainMenuLayoutRuntime.HideGameObject(menuScreen, MenuOverhaulConstants.MenuScreen.WarningField);
+            SeasonWidgetLayout.Apply(menuScreen);
         }
 
         private static void ApplyEnvironmentLayout(MainMenuLayoutRuntime.EnvironmentObjects env)
@@ -155,11 +159,12 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             }
             else
             {
-                MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "UpdateCustomPlaneScale - CustomPlane (background) not found.");
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.UpdateCustomPlaneScale.PlaneMissing", "UpdateCustomPlaneScale - CustomPlane (background) not found.");
             }
         }
 
         private static void OnLayoutSettingsChanged(object sender, System.EventArgs e) => UpdateLayoutElements();
+        private static void OnSeasonWidgetSettingsChanged(object sender, System.EventArgs e) => SeasonWidgetLayout.Apply(null);
         private static void OnScaleBackgroundChanged(object sender, System.EventArgs e) => UpdateCustomPlaneScale();
         private static void OnMenuIconVisibilityChanged(object sender, System.EventArgs e) => MainMenuButtonsService.UpdateMenuIconVisibility();
         private static void OnButtonGroupPositionChanged(object sender, System.EventArgs e) => MainMenuButtonsService.UpdateMenuButtonPositions();

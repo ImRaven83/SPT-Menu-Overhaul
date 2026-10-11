@@ -3,7 +3,8 @@ using EFT.UI;
 using MoxoPixel.MenuOverhaul.Infrastructure.Diagnostics;
 using MoxoPixel.MenuOverhaul.Infrastructure.Lifecycle;
 using MoxoPixel.MenuOverhaul.Utils;
-using SPT.Reflection.Utils;
+using SPTushonka.Reflection.Il2Cpp;
+using SPTushonka.Reflection.Utils;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
 
         public static async Task ApplyMainMenuProfileViewAsync()
         {
-            await AddPlayerModel().ConfigureAwait(false);
+            await AddPlayerModel();
             MenuLifecycleCoordinator.EnsureProfileSubscriptions();
             ApplyProfileViewState();
         }
@@ -48,6 +49,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             Settings.RotationPlayerModelHorizontal.SettingChanged += OnPlayerModelRotationChanged;
             Settings.AccentColor.SettingChanged += OnAccentColorChanged;
             Settings.EnableLargerPlayerModel.SettingChanged += OnLargerPlayerModelChanged;
+            Settings.PlayerModelSize.SettingChanged += OnPlayerModelSizeChanged;
             Settings.EnableHighQualityPlayerPreview.SettingChanged += OnPlayerPreviewQualityChanged;
             Settings.EnableDefaultPlayerAnimation.SettingChanged += OnPlayerPreviewAnimationChanged;
             Settings.CameraInventoryPositionX.SettingChanged += OnCameraInventoryTransformChanged;
@@ -70,6 +72,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             Settings.RotationPlayerModelHorizontal.SettingChanged -= OnPlayerModelRotationChanged;
             Settings.AccentColor.SettingChanged -= OnAccentColorChanged;
             Settings.EnableLargerPlayerModel.SettingChanged -= OnLargerPlayerModelChanged;
+            Settings.PlayerModelSize.SettingChanged -= OnPlayerModelSizeChanged;
             Settings.EnableHighQualityPlayerPreview.SettingChanged -= OnPlayerPreviewQualityChanged;
             Settings.EnableDefaultPlayerAnimation.SettingChanged -= OnPlayerPreviewAnimationChanged;
             Settings.CameraInventoryPositionX.SettingChanged -= OnCameraInventoryTransformChanged;
@@ -123,6 +126,8 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             UpdateCameraRotation();
             ConfigurePreviewRenderQuality(ClonedPlayerModelView);
         }
+
+        private static void OnPlayerModelSizeChanged(object sender, EventArgs e) => ConfigurePreviewRenderQuality(ClonedPlayerModelView);
 
         private static void OnPlayerPreviewQualityChanged(object sender, EventArgs e)
         {
@@ -250,8 +255,9 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
 
             if (PatchConstants.BackEndSession?.Profile != null)
             {
-                await playerModelViewScript.Show(PatchConstants.BackEndSession.Profile, null, null, 0f, null, Settings.EnableDefaultPlayerAnimation.Value);
+                await playerModelViewScript.Show(PatchConstants.BackEndSession.Profile, null, null, 0f, null, Settings.EnableDefaultPlayerAnimation.Value).AsManaged();
                 AdjustInnerPlayerModelPosition(ClonedPlayerModelView);
+                HidePlayerModelExtraElements(ClonedPlayerModelView);
                 ConfigurePreviewRenderQuality(ClonedPlayerModelView);
             }
             else
@@ -363,8 +369,10 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
                     previewRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, baseSize.x * previewSupersampleFactor);
                     previewRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, baseSize.y * previewSupersampleFactor);
 
+                    // The rendered image is scaled (not the whole view) so the size setting leaves the BottomField panel alone.
+                    float modelSize = Mathf.Clamp(Settings.PlayerModelSize.Value, 0.5f, 2f);
                     Vector3 baseScale = _basePreviewViewportScale.Value;
-                    previewRect.localScale = new Vector3(baseScale.x / previewSupersampleFactor, baseScale.y / previewSupersampleFactor, baseScale.z);
+                    previewRect.localScale = new Vector3(baseScale.x * modelSize / previewSupersampleFactor, baseScale.y * modelSize / previewSupersampleFactor, baseScale.z);
                 }
             }
 
@@ -741,8 +749,9 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
                 playerModelViewScript.Close();
                 if (PatchConstants.BackEndSession?.Profile != null)
                 {
-                    await playerModelViewScript.Show(PatchConstants.BackEndSession.Profile, null, null, 0f, null, Settings.EnableDefaultPlayerAnimation.Value);
+                    await playerModelViewScript.Show(PatchConstants.BackEndSession.Profile, null, null, 0f, null, Settings.EnableDefaultPlayerAnimation.Value).AsManaged();
                     AdjustInnerPlayerModelPosition(ClonedPlayerModelView);
+                    HidePlayerModelExtraElements(ClonedPlayerModelView);
                     UpdateCameraPosition();
                     UpdateCameraRotation();
                     ConfigurePreviewRenderQuality(ClonedPlayerModelView);

@@ -76,7 +76,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             MainMenuLayoutRuntime.EnvironmentObjects environmentObjects = MainMenuLayoutRuntime.FindEnvironmentObjects();
             if (environmentObjects == null)
             {
-                MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "UpdateLayoutElements - Could not find environment objects.");
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.UpdateLayoutElements.EnvMissing", "UpdateLayoutElements - Could not find environment objects.");
                 return;
             }
 
@@ -159,7 +159,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers.Services
             }
             else
             {
-                MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "UpdateCustomPlaneScale - CustomPlane (background) not found.");
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.UpdateCustomPlaneScale.PlaneMissing", "UpdateCustomPlaneScale - CustomPlane (background) not found.");
             }
         }
 

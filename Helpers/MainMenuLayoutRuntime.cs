@@ -42,11 +42,11 @@ namespace MoxoPixel.MenuOverhaul.Helpers
         public static EnvironmentObjects FindEnvironmentObjects()
         {
             GameObject environmentUI = GameObject.Find(MenuOverhaulConstants.Environment.EnvironmentUI);
-            if (environmentUI == null) { MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "Environment UI GameObject not found."); return null; }
+            if (environmentUI == null) { MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.EnvironmentUiMissing", "Environment UI GameObject not found."); return null; }
 
             Transform commonTransform = environmentUI.transform.Find(MenuOverhaulConstants.Environment.Common);
             GameObject commonObj = commonTransform != null ? commonTransform.gameObject : null;
-            if (commonObj == null) { MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "Common GameObject not found in Environment UI."); return null; }
+            if (commonObj == null) { MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.CommonMissing", "Common GameObject not found in Environment UI."); return null; }
 
             GameObject environmentUISceneFactory = FindEnvironmentSceneRoot(environmentUI);
             if (environmentUISceneFactory == null)
@@ -137,7 +137,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers
             EnvironmentObjects envObjects = FindEnvironmentObjects();
             if (envObjects == null || envObjects.FactoryLayout == null)
             {
-                MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "GetBackgroundPlane - EnvironmentObjects or FactoryLayout not found.");
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.GetBackgroundPlane.EnvMissing", "GetBackgroundPlane - EnvironmentObjects or FactoryLayout not found.");
                 return null;
             }
             Transform backgroundPlaneTransform = envObjects.FactoryLayout.transform.Find(MenuOverhaulConstants.Environment.CustomPlane);
@@ -631,7 +631,7 @@ namespace MoxoPixel.MenuOverhaul.Helpers
             EnvironmentObjects envObjects = FindEnvironmentObjects();
             if (envObjects == null || envObjects.EnvironmentUISceneFactory == null || envObjects.FactoryLayout == null || envObjects.EnvironmentUI == null)
             {
-                MenuDiagnosticsLogger.Warning(LogSubsystem.Layout, "DisableCameraMovement - Essential EnvironmentObjects not found.");
+                MenuDiagnosticsLogger.WarningOnce(LogSubsystem.Layout, "Layout.DisableCameraMovement.EnvMissing", "DisableCameraMovement - Essential EnvironmentObjects not found.");
                 return;
             }
             DeactivateDefaultMainMenuCamera(envObjects.EnvironmentUISceneFactory);
